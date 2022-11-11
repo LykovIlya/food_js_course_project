@@ -2,38 +2,55 @@
 
 document.addEventListener("DOMContentLoaded", () => {
 
-    const tabContent = document.querySelectorAll(".tabcontent"),
-        tabHeaderItems = document.querySelector(".tabheader__items"),
-        tabHeaderItem = tabHeaderItems.querySelectorAll(".tabheader__item");
-    hideTabContent();
+    const tabsContent = document.querySelectorAll(".tabcontent"),
+        tabHeaderItemsWrapper = document.querySelector(".tabheader__items"),
+        tabHeaderItems = tabHeaderItemsWrapper.querySelectorAll(".tabheader__item");
 
-    tabHeaderItem.forEach((tab) => {
-        tab.classList.remove("tabheader__item_active");
-    });
-    tabHeaderItems.addEventListener("click", (event) => {
+    let TABCONTENTINDEX = 0;
+
+    hideTabContent();
+    showTabContent(0);
+
+    tabHeaderItemsWrapper.addEventListener("click", (event) => {
         event.preventDefault();
         if (event.target && event.target.classList.contains("tabheader__item")) {
-            showTabContent(returnIndexOfTabHeaderItem(event.target));
-            event.target.classList.toggle("tabheader__item_active");
+            const target = event.target.innerText;
+            let i;
+            tabHeaderItems.forEach((item, index) => {
+                if (item.innerText == target) {
+                    console.log(item.innerText == target);
+                    console.log("getter:" + index);
+                    i = index;
+                }
+            });
+            if (TABCONTENTINDEX != i) {
+                hideTabContent();
+
+                showTabContent(+i);
+            }
         }
     });
 
-    function showTabContent(i = 0) {
-        console.log("show");
-        tabContent[i].classList.remove("hide");
-        tabContent[i].classList.add("show");
-    }
     function hideTabContent() {
-        tabContent.forEach((tab) => {
+        tabHeaderItems.forEach((tab) => {
+            tab.classList.remove("tabheader__item_active");
+        });
+        tabsContent.forEach(tab => {
+            tab.classList.remove("fade");
+            tab.classList.remove("show");
             tab.classList.add("hide");
+
         });
     }
-    function returnIndexOfTabHeaderItem(item) {
-        tabHeaderItem.forEach((tab, index) => {
-            if (item === tab) {
-                console.log(item === tab);
-                return index;
-            }
-        });
+    function showTabContent(i) {
+        // console.log("show:" + i);
+        // console.log(tabsContent[i]);
+        // console.log(tabHeaderItems[i]);
+
+        tabsContent[i].classList.remove("hide");
+        tabsContent[i].classList.add("show");
+        tabsContent[i].classList.add("fade");
+        tabHeaderItems[i].classList.add("tabheader__item_active");
+        TABCONTENTINDEX = i;
     }
 });
