@@ -6,28 +6,21 @@ document.addEventListener("DOMContentLoaded", () => {
         tabHeaderItemsWrapper = document.querySelector(".tabheader__items"),
         tabHeaderItems = tabHeaderItemsWrapper.querySelectorAll(".tabheader__item");
 
-    let TABCONTENTINDEX = 0;
 
     hideTabContent();
-    showTabContent(0);
+    showTabContent();
+
+    console.log(Array.from(tabHeaderItems).findIndex(value => value.innerText.toLowerCase() === "сбалансированное"));
+    console.log([...tabHeaderItems].findIndex(value => value.innerText.toLowerCase() === "сбалансированное"));
+
 
     tabHeaderItemsWrapper.addEventListener("click", (event) => {
         event.preventDefault();
-        if (event.target && event.target.classList.contains("tabheader__item")) {
-            const target = event.target.innerText;
-            let i;
-            tabHeaderItems.forEach((item, index) => {
-                if (item.innerText == target) {
-                    console.log(item.innerText == target);
-                    console.log("getter:" + index);
-                    i = index;
-                }
-            });
-            if (TABCONTENTINDEX != i) {
-                hideTabContent();
-
-                showTabContent(+i);
-            }
+        const target = event.target;
+        if (target && target.classList.contains("tabheader__item")) {
+            let i = [...tabHeaderItems].findIndex(value => value.innerText === target.innerText);
+            hideTabContent();
+            showTabContent(i);
         }
     });
 
@@ -42,15 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
         });
     }
-    function showTabContent(i) {
-        // console.log("show:" + i);
-        // console.log(tabsContent[i]);
-        // console.log(tabHeaderItems[i]);
-
+    function showTabContent(i = 0) {
         tabsContent[i].classList.remove("hide");
         tabsContent[i].classList.add("show");
         tabsContent[i].classList.add("fade");
         tabHeaderItems[i].classList.add("tabheader__item_active");
-        TABCONTENTINDEX = i;
     }
 });
