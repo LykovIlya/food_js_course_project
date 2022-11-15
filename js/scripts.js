@@ -44,40 +44,58 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //timer
 
-    const deadLine = ("2022-11-19");
-    getCountdownTimer(deadLine);
-
-    function getCountdownTimer() {
-        const timeToEnd = Date.parse(deadLine) - Date.parse(new Date()),
-            days = Math.floor((timeToEnd) / (1000 * 60 * 60 * 24)),
-            hours = Math.floor((timeToEnd) / (1000 * 60 * 60) % 24),
-            minutes = Math.floor((timeToEnd) / (1000 * 60) % 60),
-            seconds = Math.floor((timeToEnd) / (1000) % 60);
-
-        return {
-            "days": days,
-            "hours": hours,
-            "minutes": minutes,
-            "seconds": seconds
-        };
+    const deadLine = ("2022-11-17");
+    setTimer(".timer", deadLine);
 
 
-        console.log(`${days}:${hours}:${minutes}:${seconds}`);
+    function getTimeRemaining(deadLine) {
+        const total = Date.parse(deadLine) - Date.parse(new Date()),
+            days = Math.floor((total) / (1000 * 60 * 60 * 24)),
+            hours = Math.floor((total) / (1000 * 60 * 60) % 24),
+            minutes = Math.floor((total) / (1000 * 60) % 60),
+            seconds = Math.floor((total) / (1000) % 60);
+
+        if (total < 0) {
+            return {
+                "total": 0,
+                "days": 0,
+                "hours": 0,
+                "minutes": 0,
+                "seconds": 0
+            };
+        } else {
+            return {
+                "total": total,
+                "days": days > 9 ? days : `0${days}`,
+                "hours": hours > 9 ? hours : `0${hours}`,
+                "minutes": minutes > 9 ? minutes : `0${minutes}`,
+                "seconds": seconds > 9 ? seconds : `0${seconds}`,
+            };
+        }
+
+
 
     }
 
-    function showTimer(selector, timeToEndObject) {
+    function setTimer(cssClass, deadLine) {
+        const selector = document.querySelector(cssClass);
         const days = selector.querySelector("#days"),
             hours = selector.querySelector("#hours"),
             minutes = selector.querySelector("#minutes"),
-            seconds = selector.querySelector("#seconds");
+            seconds = selector.querySelector("#seconds"),
+            timeInterval = setInterval(updateTimer, 1000);
+        updateTimer();
 
-        days.innerHTML = timeToEndObject.days;
-        hours.innerHTML = timeToEndObject.hours;
-        minutes.innerHTML = timeToEndObject.minutes;
-        seconds.innerHTML = timeToEndObject.seconds;
+        function updateTimer() {
+            const total = getTimeRemaining(deadLine);
+            days.innerHTML = total.days;
+            hours.innerHTML = total.hours;
+            minutes.innerHTML = total.minutes;
+            seconds.innerHTML = total.seconds;
 
-
+            if (total <= 0) {
+                clearInterval(timeInterval);
+            }
+        }
     }
-
 });
