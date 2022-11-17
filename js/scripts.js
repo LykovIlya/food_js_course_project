@@ -155,20 +155,22 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log(item);
     });
     class MenuItem {
-        constructor(containerSelector, imgSrc, imgAlt, subtitle, descr, totalPrice) {
+        constructor(containerSelector, imgSrc, imgAlt, subtitle, descr, totalPrice, ...classes) {
             this.containerElement = document.querySelector(containerSelector);
             this.imgSrc = imgSrc;
             this.imgAlt = imgAlt;
             this.subtitle = subtitle;
             this.descr = descr;
             this.totalPrice = totalPrice;
+            this.classes = classes.length < 1 ? ["menu__item"] : classes;
             this.transfer = 27;
             this.changeToUAH();
+            this.render();
         }
         render() {
             const element = document.createElement('div');
+            this.classes.forEach(className => element.classList.add(className));
             element.innerHTML = (`
-            <div class="menu__item">
                 <img src=${this.imgSrc} alt=${this.imgAlt} />
                 <h3 class="menu__item-subtitle">${this.subtitle}</h3>
                 <div class="menu__item-descr">${this.descr}</div>
@@ -177,8 +179,7 @@ document.addEventListener("DOMContentLoaded", () => {
                     <div class="menu__item-cost">Цена:</div>
                     <div class="menu__item-total"><span>${this.totalPrice}</span> грн/день</div>
                 </div>
-            </div>`
-            );
+            `);
             this.containerElement.append(element);
         }
 
@@ -194,8 +195,8 @@ document.addEventListener("DOMContentLoaded", () => {
         (`Меню "Фитнес" - это новый подход к приготовлению блюд: больше
         свежих овощей и фруктов.Продукт активных и здоровых людей.Это
         абсолютно новый продукт с оптимальной ценой и высоким качеством!`),
-        229);
-    itemFitnes.render();
+        229,
+    );
 
     const itemPremium = new MenuItem(
         ".menu .container",
@@ -205,8 +206,8 @@ document.addEventListener("DOMContentLoaded", () => {
         (`В меню “Премиум” мы используем не только красивый дизайн упаковки,
         но и качественное исполнение блюд. Красная рыба, морепродукты,
         фрукты - ресторанное меню без похода в ресторан!`),
-        550);
-    itemPremium.render();
+        550,
+    );
 
     const itemPost = new MenuItem(
         ".menu .container",
@@ -218,6 +219,5 @@ document.addEventListener("DOMContentLoaded", () => {
         овса, кокоса или гречки, правильное количество белков за счет тофу
         и импортных вегетарианских стейков.`),
         430);
-    itemPost.render();
 
 });
