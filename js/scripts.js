@@ -106,12 +106,14 @@ document.addEventListener("DOMContentLoaded", () => {
     showAndHideModal(modalTrigger, modal, modalClose);
 
     function showAndHideModal(modalTrigger, modal, modalClose) {
+        //open modal by button
         modalTrigger.forEach(button => {
             button.addEventListener("click", (event) => {
                 event.preventDefault();
                 showModal(modalTrigger);
             });
         });
+        window.addEventListener("scroll", showModalByScroll);//open modal by window scroll end event
         modal.addEventListener("click", closeModalEvent);
         modalClose.addEventListener("click", closeModalEvent);
         document.addEventListener("keydown", closeModalEvent);
@@ -137,6 +139,90 @@ document.addEventListener("DOMContentLoaded", () => {
         document.body.style.overflow = "hidden";
         clearInterval(modalTimer);
     }
+
+    function showModalByScroll() {
+        if (window.pageYOffset + document.documentElement.clientHeight >= document.body.scrollHeight - 1) {
+            showModal();
+            window.removeEventListener("scroll", showModalByScroll);
+        }
+    }
+
+    //menu cards
+    const menuWrapper = document.querySelector(".menu__field"),
+        menuWrapperContainer = menuWrapper.querySelector(".container"),
+        menuWrapperItems = menuWrapper.querySelectorAll(".menu__item");
+
+    menuWrapperContainer.style.flexWrap = "wrap";
+    // console.log(menuWrapperContainer.innerHTML);
+    menuWrapperItems.forEach(item => {
+        console.log(item);
+    });
+    class MenuItem {
+        constructor(containerSelector, imgSrc, imgAlt, subtitle, descr, totalPrice, ...classes) {
+            this.containerElement = document.querySelector(containerSelector);
+            this.imgSrc = imgSrc;
+            this.imgAlt = imgAlt;
+            this.subtitle = subtitle;
+            this.descr = descr;
+            this.totalPrice = totalPrice;
+            this.classes = classes.length < 1 ? ["menu__item"] : classes;
+            this.transfer = 27;
+            this.changeToUAH();
+            this.render();
+        }
+        render() {
+            const element = document.createElement('div');
+            this.classes.forEach(className => element.classList.add(className));
+            element.innerHTML = (`
+                <img src=${this.imgSrc} alt=${this.imgAlt} />
+                <h3 class="menu__item-subtitle">${this.subtitle}</h3>
+                <div class="menu__item-descr">${this.descr}</div>
+                <div class="menu__item-divider"></div>
+                <div class="menu__item-price">
+                    <div class="menu__item-cost">Цена:</div>
+                    <div class="menu__item-total"><span>${this.totalPrice}</span> грн/день</div>
+                </div>
+            `);
+            this.containerElement.append(element);
+        }
+
+        changeToUAH() {
+            this.totalPrice = this.transfer * this.totalPrice;
+        }
+    }
+    const itemFitnes = new MenuItem(
+        ".menu .container",
+        "img/tabs/vegy.jpg",
+        "vegy",
+        'Меню "Фитнес"',
+        (`Меню "Фитнес" - это новый подход к приготовлению блюд: больше
+        свежих овощей и фруктов.Продукт активных и здоровых людей.Это
+        абсолютно новый продукт с оптимальной ценой и высоким качеством!`),
+        229,
+    );
+
+    const itemPremium = new MenuItem(
+        ".menu .container",
+        "img/tabs/elite.jpg",
+        "elite",
+        'Меню “Премиум”',
+        (`В меню “Премиум” мы используем не только красивый дизайн упаковки,
+        но и качественное исполнение блюд. Красная рыба, морепродукты,
+        фрукты - ресторанное меню без похода в ресторан!`),
+        550,
+    );
+
+    const itemPost = new MenuItem(
+        ".menu .container",
+        "img/tabs/post.jpg",
+        "post",
+        'Меню "Постное"',
+        (`Меню “Постное” - это тщательный подбор ингредиентов: полное
+        отсутствие продуктов животного происхождения, молоко из миндаля,
+        овса, кокоса или гречки, правильное количество белков за счет тофу
+        и импортных вегетарианских стейков.`),
+        430);
+
 
     //form
 
