@@ -102,7 +102,7 @@ document.addEventListener("DOMContentLoaded", () => {
         modal = document.querySelector(".modal"),
         modalClose = modal.querySelector(".modal__close");
 
-    const modalTimer = setTimeout(showModal, 3000);
+    const modalTimer = setTimeout(showModal, 10000);
     showAndHideModal(modalTrigger, modal, modalClose);
 
     function showAndHideModal(modalTrigger, modal, modalClose) {
@@ -112,20 +112,23 @@ document.addEventListener("DOMContentLoaded", () => {
                 showModal(modalTrigger);
             });
         });
-        modal.addEventListener("click", closeModal);
-        modalClose.addEventListener("click", closeModal);
-        document.addEventListener("keydown", closeModal);
+        modal.addEventListener("click", closeModalEvent);
+        modalClose.addEventListener("click", closeModalEvent);
+        document.addEventListener("keydown", closeModalEvent);
     }
 
-    function closeModal(event) {
+    function closeModalEvent(event = true) {
         if (event.target === modal ||
             event.target === modalClose ||
             (event.code === "Escape" && modal.classList.contains("show"))) {
             event.preventDefault();
-            modal.classList.add("hide");
-            modal.classList.remove("show");
-            document.body.style.overflow = "";
+            closeModal();
         }
+    }
+    function closeModal() {
+        modal.classList.add("hide");
+        modal.classList.remove("show");
+        document.body.style.overflow = "";
     }
 
     function showModal() {
@@ -133,5 +136,106 @@ document.addEventListener("DOMContentLoaded", () => {
         modal.classList.remove("hide");
         document.body.style.overflow = "hidden";
         clearInterval(modalTimer);
+    }
+
+    //form
+
+    const forms = document.querySelectorAll("form");
+
+    forms.forEach(form => { postDataByJSON(form); });
+
+    const message = {
+        load: "img/form/spinner.svg",
+        success: "Спасибо. Мы скоро свяжемся с вами.",
+        failure: "УПС... Ошибка"
+    };
+
+    function postDataByXML(form) {
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const messageElement = document.createElement("div");
+            messageElement.innerHTML = message.load;
+            form.append(messageElement);
+            const response = new XMLHttpRequest();
+            response.open("POST", "server.php");
+            const formData = new FormData(form);
+
+            response.send(formData);
+
+            response.addEventListener("load", () => {
+                if (response.status === 200) {
+                    messageElement.innerHTML = message.success;
+                    console.log("success");
+                } else {
+                    messageElement.innerHTML = message.failure;
+                }
+            });
+        });
+    }
+
+    function postDataByJSON(form) {
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+
+            const messageElement = document.createElement("img");
+            messageElement.src = message.load;
+            messageElement.style.cssText = `display:block; margin:0 auto`;
+            // form.append(messageElement);
+            form.insertAdjacentElement("afterend", messageElement);
+
+            const request = new XMLHttpRequest();
+            request.open("POST", "server.php");
+            request.setRequestHeader("Content-Type", "application/json");
+
+            const formData = new FormData(form);
+            const obj = {};
+
+            formData.forEach(function (value, key) {
+                obj[key] = value;
+            });
+
+            const json = JSON.stringify(obj);
+            request.send(json);
+            request.addEventListener("load", () => {
+                if (request.status === 200) {
+                    showThanksModal(message.success);
+                    form.reset();
+                    console.log(request.response);
+                    messageElement.remove();
+                } else {
+                    showThanksModal(message.failure);
+                    messageElement.remove();
+                }
+            });
+        });
+    }
+
+    function showThanksModal(message) {
+        console.log(message);
+        const prevModal = document.querySelector(".modal__dialog");
+        console.log(prevModal);
+
+        prevModal.classList.remove("show");
+        prevModal.classList.add("hide");
+        showModal();
+
+        const thanksModal = document.createElement("div");
+        thanksModal.classList.add("modal__dialog");
+        thanksModal.innerHTML = `
+        <div class="modal__content">
+        <div class="modal__close>x</div>
+        <div class="modal__title">${message}</div>
+        </div>
+        `;
+        document.querySelector(".modal").append(thanksModal);
+
+        // thanksModal.classList.add("modal__dialog");
+        // document.querySelector(".modal").append(thanksModal);
+        setTimeout(() => {
+            prevModal.classList.add("show");
+            prevModal.classList.remove("hide");
+            thanksModal.remove();
+            closeModal();
+        }, 4000);
     }
 });
