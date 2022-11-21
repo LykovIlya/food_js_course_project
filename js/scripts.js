@@ -228,7 +228,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const forms = document.querySelectorAll("form");
 
-    forms.forEach(form => { postDataByJSON(form); });
+    forms.forEach(form => { postDataByJSONByEventListener(form); });
 
     const message = {
         load: "img/form/spinner.svg",
@@ -236,7 +236,7 @@ document.addEventListener("DOMContentLoaded", () => {
         failure: "УПС... Ошибка"
     };
 
-    function postDataByXML(form) {
+    function postDataByXMLByEventListener(form) {
         form.addEventListener("submit", (event) => {
             event.preventDefault();
             const messageElement = document.createElement("div");
@@ -259,7 +259,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    function postDataByJSON(form) {
+    function postDataByJSONByEventListener(form) {
         form.addEventListener("submit", (event) => {
             event.preventDefault();
 
@@ -269,9 +269,10 @@ document.addEventListener("DOMContentLoaded", () => {
             // form.append(messageElement);
             form.insertAdjacentElement("afterend", messageElement);
 
-            const request = new XMLHttpRequest();
-            request.open("POST", "server.php");
-            request.setRequestHeader("Content-Type", "application/json");
+
+            // const request = new XMLHttpRequest();
+            // request.open("POST", "server.php");
+            // request.setRequestHeader("Content-Type", "application/json");
 
             const formData = new FormData(form);
             const obj = {};
@@ -280,26 +281,80 @@ document.addEventListener("DOMContentLoaded", () => {
                 obj[key] = value;
             });
 
-            const json = JSON.stringify(obj);
-            request.send(json);
-            request.addEventListener("load", () => {
-                if (request.status === 200) {
+            // const json = JSON.stringify(obj);
+
+
+            fetch("server.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(obj)
+            })
+                .then(data => data.text())
+                .then(data => {
                     showThanksModal(message.success);
                     form.reset();
-                    console.log(request.response);
+                    console.log(data);
                     messageElement.remove();
-                } else {
+                })
+                .catch(() => {
                     showThanksModal(message.failure);
+                })
+                .finally(() => {
+                    form.reset();
                     messageElement.remove();
-                }
-            });
+                });
+
+            // request.send(json);
+
+            // request.addEventListener("load", () => {
+            //     if (request.status === 200) {
+            // showThanksModal(message.success);
+            // form.reset();
+            // console.log(data);
+            // messageElement.remove();
+            //     } else {
+            //         showThanksModal(message.failure);
+            //     }
+            // });
+        });
+    }
+    function postDataByXMLByFetchAPI(form) {
+        form.addEventListener("submit", (event) => {
+            event.preventDefault();
+            const messageElement = document.createElement("img");
+            messageElement.src = message.load;
+            messageElement.style.cssText = `display:block; margin:0 auto`;
+            form.insertAdjacentElement("afterend", messageElement);
+            const formData = new FormData(form);
+
+            fetch("server.php", {
+                method: "POST",
+                body: formData
+            })
+                .then(data => data.text())
+                .then(data => {
+                    showThanksModal(message.success);
+                    console.log(data);
+                    messageElement.remove();
+                })
+                .catch(() => { showThanksModal(message.failure); })
+                .finally(() => {
+                    form.reset();
+                    messageElement.remove();
+                });
         });
     }
 
+    function postDataByJSONByFetchAPI(form) {
+
+    }
+
+
+
     function showThanksModal(message) {
-        console.log(message);
         const prevModal = document.querySelector(".modal__dialog");
-        console.log(prevModal);
 
         prevModal.classList.remove("show");
         prevModal.classList.add("hide");
@@ -315,8 +370,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         document.querySelector(".modal").append(thanksModal);
 
-        // thanksModal.classList.add("modal__dialog");
-        // document.querySelector(".modal").append(thanksModal);
+
         setTimeout(() => {
             prevModal.classList.add("show");
             prevModal.classList.remove("hide");
