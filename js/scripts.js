@@ -157,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     menuWrapperItems.forEach(item => {
         console.log(item);
     });
+    //create class to cards
     class MenuItem {
         constructor(containerSelector, imgSrc, imgAlt, subtitle, descr, totalPrice, ...classes) {
             this.containerElement = document.querySelector(containerSelector);
@@ -170,6 +171,7 @@ document.addEventListener("DOMContentLoaded", () => {
             this.changeToUAH();
             this.render();
         }
+        //render method to show in the page
         render() {
             const element = document.createElement('div');
             this.classes.forEach(className => element.classList.add(className));
@@ -185,7 +187,8 @@ document.addEventListener("DOMContentLoaded", () => {
             `);
             this.containerElement.append(element);
         }
-
+        //this methon transfer to UAH from dollars. future-proof method.
+        //i want to connect to API to get USD exchange rate
         changeToUAH() {
             this.totalPrice = this.transfer * this.totalPrice;
         }
@@ -228,7 +231,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const forms = document.querySelectorAll("form");
 
-    forms.forEach(form => { postDataByJSONByEventListener(form); });
+    //  POST sending via different methods; its study project. other methods should be removed
+
+    forms.forEach(form => { postDataByJSONByFetchAPI(form); });
+    // forms.forEach(form => { postDataByXMLByFetchAPI(form); });
+    // forms.forEach(form => { postDataByJSONByEventListener(form); });
+    // forms.forEach(form => { postDataByXMLByEventListener(form); });
 
     const message = {
         load: "img/form/spinner.svg",
@@ -239,22 +247,25 @@ document.addEventListener("DOMContentLoaded", () => {
     function postDataByXMLByEventListener(form) {
         form.addEventListener("submit", (event) => {
             event.preventDefault();
-            const messageElement = document.createElement("div");
-            messageElement.innerHTML = message.load;
-            form.append(messageElement);
-            const response = new XMLHttpRequest();
-            response.open("POST", "server.php");
+            const messageElement = document.createElement("img");
+            messageElement.src = message.load;
+            form.insertAdjacentElement("afterend", messageElement);
+
+            const request = new XMLHttpRequest();
+            request.open("POST", "serverXML.php");
             const formData = new FormData(form);
 
-            response.send(formData);
+            request.send(formData);
 
-            response.addEventListener("load", () => {
-                if (response.status === 200) {
-                    messageElement.innerHTML = message.success;
-                    console.log("success");
+            request.addEventListener("load", () => {
+                if (request.status === 200) {
+                    showThanksModal(message.success);
+                    console.log(request.response);
                 } else {
-                    messageElement.innerHTML = message.failure;
+                    showThanksModal(message.failure);
                 }
+                form.reset();
+                messageElement.remove();
             });
         });
     }
@@ -263,16 +274,15 @@ document.addEventListener("DOMContentLoaded", () => {
         form.addEventListener("submit", (event) => {
             event.preventDefault();
 
+            //push in modal after submit event svg img 
             const messageElement = document.createElement("img");
             messageElement.src = message.load;
             messageElement.style.cssText = `display:block; margin:0 auto`;
-            // form.append(messageElement);
             form.insertAdjacentElement("afterend", messageElement);
 
-
-            // const request = new XMLHttpRequest();
-            // request.open("POST", "server.php");
-            // request.setRequestHeader("Content-Type", "application/json");
+            const request = new XMLHttpRequest();
+            request.open("POST", "serverJSON.php");
+            request.setRequestHeader("Content-Type", "application/json");
 
             const formData = new FormData(form);
             const obj = {};
@@ -281,10 +291,70 @@ document.addEventListener("DOMContentLoaded", () => {
                 obj[key] = value;
             });
 
-            // const json = JSON.stringify(obj);
+            const json = JSON.stringify(obj);
+            request.send(json);
+
+            request.addEventListener("load", () => {
+                if (request.status === 200) {
+                    showThanksModal(message.success);
+                    form.reset();
+                    console.log(request.response);
+                    messageElement.remove();
+                } else {
+                    showThanksModal(message.failure);
+                }
+            });
+        });
+    }
 
 
-            fetch("server.php", {
+    function postDataByXMLByFetchAPI(form) {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            //push in modal after submit event svg img 
+            const messageElement = document.createElement('img');
+            messageElement.src = message.load;
+            messageElement.style.cssText = `display:block; margin:0 auto`;
+            form.insertAdjacentElement("afterend", messageElement);
+
+            const formData = new FormData(form);
+
+            fetch("serverXML.php", {
+                method: 'POST',
+                body: formData
+            })
+                .then(data => data.text())
+                .then(data => {
+                    showThanksModal(message.success);
+                    console.log(data);
+                })
+                .catch(err => {
+                    showThanksModal(message.failure);
+                })
+                .finally(() => {
+                    form.reset();
+                    messageElement.remove();
+                });
+
+        });
+    }
+
+    function postDataByJSONByFetchAPI(form) {
+        form.addEventListener('submit', (event) => {
+            event.preventDefault();
+
+            const messageElement = document.createElement("img");
+            messageElement.src = message.load;
+            messageElement.style.cssText = `display:block; margin:0 auto`;
+            form.insertAdjacentElement("afterend", messageElement);
+
+            const formData = new FormData(form);
+            const obj = {};
+            formData.forEach((value, key) => {
+                obj[key] = value;
+            });
+            fetch("serverJSON.php", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
@@ -294,65 +364,19 @@ document.addEventListener("DOMContentLoaded", () => {
                 .then(data => data.text())
                 .then(data => {
                     showThanksModal(message.success);
-                    form.reset();
                     console.log(data);
-                    messageElement.remove();
                 })
-                .catch(() => {
+                .catch(err => {
                     showThanksModal(message.failure);
                 })
                 .finally(() => {
                     form.reset();
                     messageElement.remove();
                 });
-
-            // request.send(json);
-
-            // request.addEventListener("load", () => {
-            //     if (request.status === 200) {
-            // showThanksModal(message.success);
-            // form.reset();
-            // console.log(data);
-            // messageElement.remove();
-            //     } else {
-            //         showThanksModal(message.failure);
-            //     }
-            // });
-        });
-    }
-    function postDataByXMLByFetchAPI(form) {
-        form.addEventListener("submit", (event) => {
-            event.preventDefault();
-            const messageElement = document.createElement("img");
-            messageElement.src = message.load;
-            messageElement.style.cssText = `display:block; margin:0 auto`;
-            form.insertAdjacentElement("afterend", messageElement);
-            const formData = new FormData(form);
-
-            fetch("server.php", {
-                method: "POST",
-                body: formData
-            })
-                .then(data => data.text())
-                .then(data => {
-                    showThanksModal(message.success);
-                    console.log(data);
-                    messageElement.remove();
-                })
-                .catch(() => { showThanksModal(message.failure); })
-                .finally(() => {
-                    form.reset();
-                    messageElement.remove();
-                });
         });
     }
 
-    function postDataByJSONByFetchAPI(form) {
-
-    }
-
-
-
+    //this function works to show the "thank you" modal window 
     function showThanksModal(message) {
         const prevModal = document.querySelector(".modal__dialog");
 
@@ -370,7 +394,7 @@ document.addEventListener("DOMContentLoaded", () => {
         `;
         document.querySelector(".modal").append(thanksModal);
 
-
+        //this timer removes the modal window after the time has elapsed
         setTimeout(() => {
             prevModal.classList.add("show");
             prevModal.classList.remove("hide");
