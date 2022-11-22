@@ -417,4 +417,36 @@ document.addEventListener("DOMContentLoaded", () => {
     fetch("http://localhost:3000/menu")
         .then(data => data.json())
         .then(res => console.log(res));
+
+    // slider
+
+    const sliderWrapper = document.querySelector(".offer__slider"),
+        sliderWrapperCounter = document.querySelector(".offer__slider-counter"),
+        currentNumberSlide = sliderWrapper.querySelector("#current"),
+        slide = sliderWrapperCounter.querySelector(".offer__slide img");
+
+    const sliderArr = [
+        "img/slider/food-12.jpg",
+        "img/slider/olive-oil.jpg",
+        "img/slider/paprika.jpg",
+        "img/slider/pepper.jpg"
+    ];
+
+    sliderWrapperCounter.addEventListener("click", (event) => {
+        event.preventDefault();
+        // console.dir(event.target);
+        switch (event.target.className || event.target.parentElement.className) {
+            case "offer__slider-prev": {
+                console.log("Click", currentNumberSlide.innerHTML);
+            }
+                break;
+            case "offer__slider-next": {
+                console.log("Click", currentNumberSlide.innerHTML);
+            }
+                break;
+        }
+    });
+
+
+
 });
