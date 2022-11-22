@@ -169,6 +169,7 @@ document.addEventListener("DOMContentLoaded", () => {
             this.classes = classes.length < 1 ? ["menu__item"] : classes;
             this.transfer = 27;
             this.changeToUAH();
+            this.render();
         }
         //render method to show in the page
         render() {
@@ -192,48 +193,40 @@ document.addEventListener("DOMContentLoaded", () => {
             this.totalPrice = this.transfer * this.totalPrice;
         }
     }
+    const itemFitnes = new MenuItem(
+        ".menu .container",
+        "img/tabs/vegy.jpg",
+        "vegy",
+        'Меню "Фитнес"',
+        (`Меню "Фитнес" - это новый подход к приготовлению блюд: больше
+        свежих овощей и фруктов.Продукт активных и здоровых людей.Это
+        абсолютно новый продукт с оптимальной ценой и высоким качеством!`),
+        229,
+    );
 
-    const getResource = async (url) => {
-        const res = await fetch(url);
-        if (!res.ok) {
-            throw new Error(`Ошибка мля. ${url} ${res.status}`);
-        }
-        return await res.json();
-    };
+    const itemPremium = new MenuItem(
+        ".menu .container",
+        "img/tabs/elite.jpg",
+        "elite",
+        'Меню “Премиум”',
+        (`В меню “Премиум” мы используем не только красивый дизайн упаковки,
+        но и качественное исполнение блюд. Красная рыба, морепродукты,
+        фрукты - ресторанное меню без похода в ресторан!`),
+        550,
+    );
 
-    // getResource("http://localhost:3000/menu").then(data => {
-    //     data.forEach(({ img, alt, title, descr, price }) => {
-    //         new MenuItem(".menu .container", img, alt, title, descr, price).render();
-    //     });
-    // });
+    const itemPost = new MenuItem(
+        ".menu .container",
+        "img/tabs/post.jpg",
+        "post",
+        'Меню "Постное"',
+        (`Меню “Постное” - это тщательный подбор ингредиентов: полное
+        отсутствие продуктов животного происхождения, молоко из миндаля,
+        овса, кокоса или гречки, правильное количество белков за счет тофу
+        и импортных вегетарианских стейков.`),
+        430);
 
-    axios.get("http://localhost:3000/menu")
-        .then(data => {
-            data.data.forEach(({ img, alt, title, descr, price }) => {
-                new MenuItem(".menu .container", img, alt, title, descr, price).render();
-            });
-        });
-    // getResource("http://localhost:3000/menu")
-    //     .then(data => createCard(data));
 
-    // function createCard(data) {
-    //     data.forEach(({ img, alt, title, descr, price }) => {
-    //         const element = document.createElement("div");
-    //         element.classList.add("menu__item");
-
-    //         element.innerHTML = (
-    //             `<img src=${img} alt=${alt} />
-    //             <h3 class="menu__item-subtitle">${title}</h3>
-    //             <div class="menu__item-descr">${descr}</div>
-    //             <div class="menu__item-divider"></div>
-    //             <div class="menu__item-price">
-    //                 <div class="menu__item-cost">Цена:</div>
-    //                 <div class="menu__item-total"><span>${price}</span> грн/день</div>
-    //             </div>`);
-
-    //         document.querySelector(".menu .container").append(element);
-    //     });
-    // }
     //form
 
     const forms = document.querySelectorAll("form");
@@ -249,18 +242,6 @@ document.addEventListener("DOMContentLoaded", () => {
         load: "img/form/spinner.svg",
         success: "Спасибо. Мы скоро свяжемся с вами.",
         failure: "УПС... Ошибка"
-    };
-
-    const postData = async (url, data) => {
-        const res = await fetch(url, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: data
-        });
-
-        return await res.json();
     };
 
     function postDataByXMLByEventListener(form) {
@@ -369,10 +350,18 @@ document.addEventListener("DOMContentLoaded", () => {
             form.insertAdjacentElement("afterend", messageElement);
 
             const formData = new FormData(form);
-
-            const json = JSON.stringify(Object.fromEntries(formData.entries()));
-
-            postData("http://localhost:3000/requests", json)
+            const obj = {};
+            formData.forEach((value, key) => {
+                obj[key] = value;
+            });
+            fetch("serverJSON.php", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify(obj)
+            })
+                .then(data => data.text())
                 .then(data => {
                     showThanksModal(message.success);
                     console.log(data);
@@ -414,16 +403,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }, 4000);
     }
 
-    fetch("http://localhost:3000/menu")
-        .then(data => data.json())
-        .then(res => console.log(res));
-
-    // slider
+    //slider
 
     const sliderWrapper = document.querySelector(".offer__slider"),
         sliderWrapperCounter = document.querySelector(".offer__slider-counter"),
         currentNumberSlide = sliderWrapper.querySelector("#current"),
-        slide = sliderWrapperCounter.querySelector(".offer__slide img");
+        slides = sliderWrapper.querySelectorAll(".offer__slide");
 
     const sliderArr = [
         "img/slider/food-12.jpg",
@@ -434,18 +419,39 @@ document.addEventListener("DOMContentLoaded", () => {
 
     sliderWrapperCounter.addEventListener("click", (event) => {
         event.preventDefault();
-        // console.dir(event.target);
         switch (event.target.className || event.target.parentElement.className) {
             case "offer__slider-prev": {
-                console.log("Click", currentNumberSlide.innerHTML);
+                currentNumberSlide.innerHTML = changeCurrentNumber(currentNumberSlide, false);
             }
                 break;
             case "offer__slider-next": {
-                console.log("Click", currentNumberSlide.innerHTML);
+                currentNumberSlide.innerHTML = changeCurrentNumber(currentNumberSlide, true);
             }
                 break;
         }
+        showCurrentImage(slides, currentNumberSlide.innerHTML);
     });
+
+    function changeCurrentNumber(element = 0, iteration = true) {
+        const num = iteration ? Number.parseInt(element.innerHTML) + 1 : Number.parseInt(element.innerHTML) - 1;
+        if (num > 4) {
+            return "01";
+        } else if (num < 1) {
+            return "04";
+        } else {
+            return `0${num}`;
+        }
+    }
+    function showCurrentImage(slides, num) {
+        slides.forEach((slide) => {
+            slide.classList.add("hide");
+        });
+        slides[num - 1].classList.remove("hide");
+        slides[num - 1].classList.add("show");
+        slides[num - 1].classList.add("fade");
+    }
+
+
 
 
 
