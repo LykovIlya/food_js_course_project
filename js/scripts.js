@@ -408,38 +408,40 @@ document.addEventListener("DOMContentLoaded", () => {
     const sliderWrapper = document.querySelector(".offer__slider"),
         sliderWrapperCounter = document.querySelector(".offer__slider-counter"),
         currentNumberSlide = sliderWrapper.querySelector("#current"),
+        totalNumberSlide = sliderWrapper.querySelector("#total"),
         slides = sliderWrapper.querySelectorAll(".offer__slide");
 
-    const sliderArr = [
-        "img/slider/food-12.jpg",
-        "img/slider/olive-oil.jpg",
-        "img/slider/paprika.jpg",
-        "img/slider/pepper.jpg"
-    ];
+    let sliderIndex = 1;
+    currentNumberSlide.innerHTML = `0${sliderIndex}`;
+    totalNumberSlide.innerHTML = slides.length > 10 ? slides.length : `0${slides.length}`;
+
+    showCurrentImage(slides, sliderIndex);
 
     sliderWrapperCounter.addEventListener("click", (event) => {
         event.preventDefault();
         switch (event.target.className || event.target.parentElement.className) {
             case "offer__slider-prev": {
-                currentNumberSlide.innerHTML = changeCurrentNumber(currentNumberSlide, false);
+                sliderIndex = changeCurrentNumber(sliderIndex, false, slides);
             }
                 break;
             case "offer__slider-next": {
-                currentNumberSlide.innerHTML = changeCurrentNumber(currentNumberSlide, true);
+                sliderIndex = changeCurrentNumber(sliderIndex, true, slides);
             }
                 break;
         }
-        showCurrentImage(slides, currentNumberSlide.innerHTML);
+        currentNumberSlide.innerHTML = sliderIndex;
+        showCurrentImage(slides, sliderIndex);
     });
 
-    function changeCurrentNumber(element = 0, iteration = true) {
-        const num = iteration ? Number.parseInt(element.innerHTML) + 1 : Number.parseInt(element.innerHTML) - 1;
-        if (num > 4) {
+    function changeCurrentNumber(index, iteration, slidesArr) {
+        let num = iteration ? Number.parseInt(index) + 1 : Number.parseInt(index) - 1;
+        const totalSlides = Number.parseInt(slidesArr.length);
+        if (num > totalSlides) {
             return "01";
         } else if (num < 1) {
-            return "04";
+            return totalSlides < 10 ? `0${totalSlides}` : totalSlides;
         } else {
-            return `0${num}`;
+            return num < 10 ? `0${num}` : num;
         }
     }
     function showCurrentImage(slides, num) {
@@ -450,9 +452,4 @@ document.addEventListener("DOMContentLoaded", () => {
         slides[num - 1].classList.add("show");
         slides[num - 1].classList.add("fade");
     }
-
-
-
-
-
 });
