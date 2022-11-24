@@ -309,6 +309,27 @@ document.addEventListener("DOMContentLoaded", () => {
         slide.style.width = widthField;
     });
 
+    slidesSection.style.position = "relative";
+
+    const indicators = document.createElement("ol"),
+        dots = [];
+
+    indicators.classList.add("carousel-indicators");
+
+    slidesSection.append(indicators);
+
+    for (let i = 0; i < slides.length; i++) {
+        const dot = document.createElement("li");
+        dot.setAttribute("data-slide-to", i + 1);
+        dot.classList.add("dot");
+
+        if (i == 0) {
+            dot.style.opacity = 1;
+        }
+        indicators.append(dot);
+        dots.push(dot);
+    }
+
     currentNumberSlide.innerHTML = sliderIndex < 10 ? `0${sliderIndex}` : sliderIndex;
     totalNumberSlide.innerHTML = slides.length > 10 ? slides.length : `0${slides.length}`;
 
@@ -337,6 +358,26 @@ document.addEventListener("DOMContentLoaded", () => {
                 break;
         }
         currentNumberSlide.innerHTML = sliderIndex;
+        dots.forEach(dot => {
+            dot.style.opacity = 0.5;
+        });
+    });
+
+    dots.forEach(dot => {
+        dot.addEventListener("click", (e) => {
+            dots.forEach(dot => {
+                dot.style.opacity = 0.5;
+            });
+            e.target.style.opacity = 1;
+
+            const slideTo = e.target.getAttribute("data-slide-to");
+            sliderIndex = slideTo;
+
+            offset = Number.parseInt(widthField) * (slideTo - 1);
+            slidesField.style.transform = `translateX(-${offset}px)`;
+
+            changeCurrentNumber(slideTo - 1, true, slides);
+        });
     });
 
     function changeCurrentNumber(index, iteration, slidesArr) {
