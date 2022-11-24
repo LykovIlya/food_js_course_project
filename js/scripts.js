@@ -44,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //timer
 
-    const deadLine = ("2022-11-17");
+    const deadLine = ("2022-12-5");
     setTimer(".timer", deadLine);
 
 
@@ -157,6 +157,7 @@ document.addEventListener("DOMContentLoaded", () => {
     menuWrapperItems.forEach(item => {
         console.log(item);
     });
+
     //create class to cards
     class MenuItem {
         constructor(containerSelector, imgSrc, imgAlt, subtitle, descr, totalPrice, ...classes) {
@@ -169,7 +170,6 @@ document.addEventListener("DOMContentLoaded", () => {
             this.classes = classes.length < 1 ? ["menu__item"] : classes;
             this.transfer = 27;
             this.changeToUAH();
-            this.render();
         }
         //render method to show in the page
         render() {
@@ -193,39 +193,21 @@ document.addEventListener("DOMContentLoaded", () => {
             this.totalPrice = this.transfer * this.totalPrice;
         }
     }
-    const itemFitnes = new MenuItem(
-        ".menu .container",
-        "img/tabs/vegy.jpg",
-        "vegy",
-        'Меню "Фитнес"',
-        (`Меню "Фитнес" - это новый подход к приготовлению блюд: больше
-        свежих овощей и фруктов.Продукт активных и здоровых людей.Это
-        абсолютно новый продукт с оптимальной ценой и высоким качеством!`),
-        229,
-    );
 
-    const itemPremium = new MenuItem(
-        ".menu .container",
-        "img/tabs/elite.jpg",
-        "elite",
-        'Меню “Премиум”',
-        (`В меню “Премиум” мы используем не только красивый дизайн упаковки,
-        но и качественное исполнение блюд. Красная рыба, морепродукты,
-        фрукты - ресторанное меню без похода в ресторан!`),
-        550,
-    );
+    const getResourse = async (url) => {
+        const res = await fetch(url);
+        if (!res.ok) {
+            throw new Error("Could not fetch ${url}, status: ${res.status}");
+        }
+        return await res.json();
+    };
 
-    const itemPost = new MenuItem(
-        ".menu .container",
-        "img/tabs/post.jpg",
-        "post",
-        'Меню "Постное"',
-        (`Меню “Постное” - это тщательный подбор ингредиентов: полное
-        отсутствие продуктов животного происхождения, молоко из миндаля,
-        овса, кокоса или гречки, правильное количество белков за счет тофу
-        и импортных вегетарианских стейков.`),
-        430);
-
+    getResourse("http://localhost:3000/menu")
+        .then(data => {
+            data.forEach(({ img, alt, title, descr, price }) => {
+                new MenuItem(".menu .container", img, alt, title, descr, price).render();
+            });
+        });
 
     //form
 
@@ -234,111 +216,12 @@ document.addEventListener("DOMContentLoaded", () => {
     //  POST sending via different methods; its study project. other methods should be removed
 
     forms.forEach(form => { postDataByJSONByFetchAPI(form); });
-    // forms.forEach(form => { postDataByXMLByFetchAPI(form); });
-    // forms.forEach(form => { postDataByJSONByEventListener(form); });
-    // forms.forEach(form => { postDataByXMLByEventListener(form); });
 
     const message = {
         load: "img/form/spinner.svg",
         success: "Спасибо. Мы скоро свяжемся с вами.",
         failure: "УПС... Ошибка"
     };
-
-    function postDataByXMLByEventListener(form) {
-        form.addEventListener("submit", (event) => {
-            event.preventDefault();
-            const messageElement = document.createElement("img");
-            messageElement.src = message.load;
-            form.insertAdjacentElement("afterend", messageElement);
-
-            const request = new XMLHttpRequest();
-            request.open("POST", "serverXML.php");
-            const formData = new FormData(form);
-
-            request.send(formData);
-
-            request.addEventListener("load", () => {
-                if (request.status === 200) {
-                    showThanksModal(message.success);
-                    console.log(request.response);
-                } else {
-                    showThanksModal(message.failure);
-                }
-                form.reset();
-                messageElement.remove();
-            });
-        });
-    }
-
-    function postDataByJSONByEventListener(form) {
-        form.addEventListener("submit", (event) => {
-            event.preventDefault();
-
-            //push in modal after submit event svg img 
-            const messageElement = document.createElement("img");
-            messageElement.src = message.load;
-            messageElement.style.cssText = `display:block; margin:0 auto`;
-            form.insertAdjacentElement("afterend", messageElement);
-
-            const request = new XMLHttpRequest();
-            request.open("POST", "serverJSON.php");
-            request.setRequestHeader("Content-Type", "application/json");
-
-            const formData = new FormData(form);
-            const obj = {};
-
-            formData.forEach(function (value, key) {
-                obj[key] = value;
-            });
-
-            const json = JSON.stringify(obj);
-            request.send(json);
-
-            request.addEventListener("load", () => {
-                if (request.status === 200) {
-                    showThanksModal(message.success);
-                    form.reset();
-                    console.log(request.response);
-                    messageElement.remove();
-                } else {
-                    showThanksModal(message.failure);
-                }
-            });
-        });
-    }
-
-
-    function postDataByXMLByFetchAPI(form) {
-        form.addEventListener('submit', (event) => {
-            event.preventDefault();
-
-            //push in modal after submit event svg img 
-            const messageElement = document.createElement('img');
-            messageElement.src = message.load;
-            messageElement.style.cssText = `display:block; margin:0 auto`;
-            form.insertAdjacentElement("afterend", messageElement);
-
-            const formData = new FormData(form);
-
-            fetch("serverXML.php", {
-                method: 'POST',
-                body: formData
-            })
-                .then(data => data.text())
-                .then(data => {
-                    showThanksModal(message.success);
-                    console.log(data);
-                })
-                .catch(err => {
-                    showThanksModal(message.failure);
-                })
-                .finally(() => {
-                    form.reset();
-                    messageElement.remove();
-                });
-
-        });
-    }
 
     function postDataByJSONByFetchAPI(form) {
         form.addEventListener('submit', (event) => {
@@ -405,32 +288,55 @@ document.addEventListener("DOMContentLoaded", () => {
 
     //slider
 
-    const sliderWrapper = document.querySelector(".offer__slider"),
+    const slidesSection = document.querySelector(".offer__slider"),
         sliderWrapperCounter = document.querySelector(".offer__slider-counter"),
-        currentNumberSlide = sliderWrapper.querySelector("#current"),
-        totalNumberSlide = sliderWrapper.querySelector("#total"),
-        slides = sliderWrapper.querySelectorAll(".offer__slide");
+        currentNumberSlide = slidesSection.querySelector("#current"),
+        totalNumberSlide = slidesSection.querySelector("#total"),
+        slides = slidesSection.querySelectorAll(".offer__slide"),
+        slidesWrapper = document.querySelector(".offer__slider-wrapper"),
+        slidesField = document.querySelector(".offer__slider-inner"),
+        widthField = window.getComputedStyle(slidesWrapper).width;
+
 
     let sliderIndex = 1;
-    currentNumberSlide.innerHTML = `0${sliderIndex}`;
-    totalNumberSlide.innerHTML = slides.length > 10 ? slides.length : `0${slides.length}`;
+    let offset = 0;
 
-    showCurrentImage(slides, sliderIndex);
+    slidesField.style.width = 100 * slides.length + "%";
+    slidesField.style.display = "flex";
+    slidesField.style.transition = "0.5s all";
+    slidesWrapper.style.overflow = "hidden";
+    slides.forEach(slide => {
+        slide.style.width = widthField;
+    });
+
+    currentNumberSlide.innerHTML = sliderIndex < 10 ? `0${sliderIndex}` : sliderIndex;
+    totalNumberSlide.innerHTML = slides.length > 10 ? slides.length : `0${slides.length}`;
 
     sliderWrapperCounter.addEventListener("click", (event) => {
         event.preventDefault();
         switch (event.target.className || event.target.parentElement.className) {
             case "offer__slider-prev": {
+                if (offset == 0) {
+                    offset = Number.parseInt(widthField) * (slides.length - 1);
+                } else {
+                    offset -= Number.parseInt(widthField);
+                }
                 sliderIndex = changeCurrentNumber(sliderIndex, false, slides);
+                slidesField.style.transform = `translateX(-${offset}px)`;
             }
                 break;
             case "offer__slider-next": {
+                if (offset == Number.parseInt(widthField) * (slides.length - 1)) {
+                    offset = 0;
+                } else {
+                    offset += Number.parseInt(widthField);
+                }
                 sliderIndex = changeCurrentNumber(sliderIndex, true, slides);
+                slidesField.style.transform = `translateX(-${offset}px)`;
             }
                 break;
         }
         currentNumberSlide.innerHTML = sliderIndex;
-        showCurrentImage(slides, sliderIndex);
     });
 
     function changeCurrentNumber(index, iteration, slidesArr) {
@@ -443,13 +349,5 @@ document.addEventListener("DOMContentLoaded", () => {
         } else {
             return num < 10 ? `0${num}` : num;
         }
-    }
-    function showCurrentImage(slides, num) {
-        slides.forEach((slide) => {
-            slide.classList.add("hide");
-        });
-        slides[num - 1].classList.remove("hide");
-        slides[num - 1].classList.add("show");
-        slides[num - 1].classList.add("fade");
     }
 });
