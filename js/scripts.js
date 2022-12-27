@@ -195,7 +195,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     const getResourse = async (url) => {
-        const res = await fetch(url);
+
+        let res = await fetch(url);
         if (!res.ok) {
             throw new Error("Could not fetch ${url}, status: ${res.status}");
         }
@@ -204,6 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     getResourse("http://localhost:3000/menu")
         .then(data => {
+            console.log(data);
             data.forEach(({ img, alt, title, descr, price }) => {
                 new MenuItem(".menu .container", img, alt, title, descr, price).render();
             });
@@ -309,6 +311,8 @@ document.addEventListener("DOMContentLoaded", () => {
         slide.style.width = widthField;
     });
 
+    console.log("Hellow World");
+
     slidesSection.style.position = "relative";
 
     const indicators = document.createElement("ol"),
@@ -361,7 +365,10 @@ document.addEventListener("DOMContentLoaded", () => {
         dots.forEach(dot => {
             dot.style.opacity = 0.5;
         });
+        console.log(sliderIndex);
+        dots[Number.parseInt(sliderIndex) - 1].style.opacity = 1;
     });
+
 
     dots.forEach(dot => {
         dot.addEventListener("click", (e) => {
@@ -376,7 +383,7 @@ document.addEventListener("DOMContentLoaded", () => {
             offset = Number.parseInt(widthField) * (slideTo - 1);
             slidesField.style.transform = `translateX(-${offset}px)`;
 
-            changeCurrentNumber(slideTo - 1, true, slides);
+            currentNumberSlide.innerHTML = changeCurrentNumber(slideTo - 1, true, slides);
         });
     });
 
